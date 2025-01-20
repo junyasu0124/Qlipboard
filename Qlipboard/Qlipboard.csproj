@@ -42,6 +42,14 @@
   <ItemGroup>
     <ProjectReference Include="..\QlipboardForms\QlipboardForms.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <None Update="NotifyIcon.ico">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="NotifyIconBlack.ico">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
 
   <!--
     Defining the "HasPackageAndPublishMenuAddedByProject" property here allows the Solution
@@ -64,5 +72,6 @@
     <Company />
     <Product />
     <DefaultLanguage>ja-JP</DefaultLanguage>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 </Project>
