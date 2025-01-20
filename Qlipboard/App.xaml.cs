@@ -51,10 +51,20 @@ public partial class App : Microsoft.UI.Xaml.Application
 
     menu.Items.Add("Settings", null, (sender, e) =>
     {
-      window ??= new MainWindow();
+      if (window == null)
+      {
+        window = new MainWindow();
+        window.Closed += OnWindowClosed;
+      }
       window.Activate();
     });
-    menu.Items.Add("Exit", null, (sender, e) => Current.Exit());
+    menu.Items.Add("Exit", null, (sender, e) =>
+    {
+      window?.Close();
+      if (isActivated)
+        Hook.HookEnd();
+      Process.GetCurrentProcess().Kill();
+    });
     notifyIcon = new NotifyIcon
     {
       Icon = new Icon(AppDomain.CurrentDomain.BaseDirectory + (isActivated ? "NotifyIcon.ico" : "NotifyIconBlack.ico")),
@@ -63,10 +73,11 @@ public partial class App : Microsoft.UI.Xaml.Application
     };
   }
 
-  protected override void OnLaunched(LaunchActivatedEventArgs args)
+  private void OnWindowClosed(object sender, WindowEventArgs args)
   {
-    //window = new MainWindow();
-    //window.Activate();
+    window?.AppWindow.Hide();
+
+    args.Handled = true;
   }
 }
 
@@ -95,26 +106,11 @@ static class Hook
     if (curProcess.MainModule == null)
       return;
     using var curModule = curProcess.MainModule;
-    // フックを行う
-    // 第1引数	フックするイベントの種類
-    //   13はキーボードフックを表す
-    // 第2引数 フック時のメソッドのアドレス
-    //   フックメソッドを登録する
-    // 第3引数	インスタンスハンドル
-    //   現在実行中のハンドルを渡す
-    // 第4引数	スレッドID
-    //   0を指定すると、すべてのスレッドでフックされる
-    hookPtr = SetWindowsHookEx(
-        13,
-        HookCallback,
-        GetModuleHandle(curModule.ModuleName),
-        0
-    );
+    hookPtr = SetWindowsHookEx(13, HookCallback, GetModuleHandle(curModule.ModuleName), 0);
   }
 
   private static int HookCallback(int nCode, IntPtr wParam, IntPtr lParam)
   {
-    // フックしたキー
     var key = (Keys)(short)Marshal.ReadInt32(lParam);
 
     if (key == Keys.LControlKey)
